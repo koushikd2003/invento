@@ -1,26 +1,13 @@
-import { NextResponse } from 'next/server';
-import { clerkClient } from '@clerk/nextjs/server';
+import { clerkMiddleware } from '@clerk/nextjs/server';
 
-export function middleware(req: { nextUrl: { clone: () => any; }; }) {
-  const url = req.nextUrl.clone();
-
-  // Check if the request is to a public route
-  if (url.pathname.startsWith('/api/webhooks/clerk')) {
-    return NextResponse.next();
-  }
-
-  // Apply Clerk middleware logic for protected routes
-  // For example:
-  // if (!clerkClient.isAuthenticated(req)) {
-  //   return NextResponse.redirect('/sign-in');
-  // }
-
-  return NextResponse.next();
-}
+// Make sure that the `/api/webhooks/(.*)` route is not protected here
+export default clerkMiddleware()
 
 export const config = {
-  matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
-  ],
+ matcher: [
+  // Skip Next.js internals and all static files, unless found in search params
+  '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+  // Always run for API routes
+  '/(api|trpc)(.*)',
+ ],
 };
